@@ -24,30 +24,6 @@ class Program
         string dbPath = "files.db";
         var dbManager = new BinaryDataManager(dbPath);
 
-        // Prepare the content for readme.txt
-        //string readmeContent = "This is a nominal readme file for the database.";
-        //byte[] readmeBytes = Encoding.UTF8.GetBytes(readmeContent);
-
-        // Get the readme.txt content from the local file, to add to the database.
-        if (!File.Exists("readme.txt"))
-        {
-            Console.WriteLine("The file readme.txt does not exist in the current directory.");
-            return;
-        }
-        byte[] readmeBytes = File.ReadAllBytes("readme.txt");
-
-        // Add readme.txt to the database.
-        bool success = dbManager.Add("readme.txt", readmeBytes);
-        Console.WriteLine(success ? "readme.txt added successfully." : "Failed to add readme.txt.");
-
-        // Optional: Retrieve and display the file content.
-        byte[] retrieved = dbManager.Get("readme.txt");
-        if (retrieved != null)
-        {
-            string content = Encoding.UTF8.GetString(retrieved);
-            Console.WriteLine("Retrieved content: " + content);
-        }
-
         // write an arbitrary data structure to the database.
         {
             ByteArrayWriter writer = new ByteArrayWriter();
@@ -55,6 +31,7 @@ class Program
             writer.WriteFloat(3.14f);
             writer.WriteDouble(0.123456789);
             writer.WriteBool(true);
+            writer.WriteString("Hello, World!");
             dbManager.Add("adhoc", writer.ToArray());
         }
 
@@ -68,7 +45,8 @@ class Program
                 float  f     = reader.ReadFloat();
                 double d     = reader.ReadDouble();
                 bool   bool2 = reader.ReadBool();
-                Console.WriteLine($"i: {i}, f: {f}, d: {d}, b: {bool2}");
+                string str   = reader.ReadString();
+                Console.WriteLine($"i: {i}, f: {f}, d: {d}, b: {bool2}, str: {str}");
             }
             else
             {
@@ -87,16 +65,8 @@ class Program
 
         // List the database contents
         Console.WriteLine("Entries in the database:");
-        List<string> files = dbManager.List();
-        foreach (string file in files)
-            Console.WriteLine($"- {file}");
-
-        // var dbManager = new AsyncBinaryDataManager("path/to/your.db");
-
-        // // For example, to add data:
-        // bool success = await dbManager.Add("tile_001", someByteData);
-
-        // // Or to check if data exists:
-        // bool exists = await dbManager.DataExists("tile_001");
+        List<string> dataNameList = dbManager.List();
+        foreach (string currName in dataNameList)
+            Console.WriteLine($"- {currName}");
     }
 }
